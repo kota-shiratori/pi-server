@@ -1,10 +1,14 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
+import { csrf } from 'hono/csrf'
 import { db } from './db.js'
 import type { Todo } from './db.js'
 import { todoList } from './views/todoList.js'
 
 const app = new Hono()
+
+// CSRF 防御: Origin ヘッダーが pi.swan-lab.dev じゃない POST は拒否
+app.use('*', csrf({ origin: 'https://pi.swan-lab.dev' }))
 
 // GET / : Todo一覧表示
 app.get('/', (c) => {
@@ -43,5 +47,5 @@ app.post('/todos/:id/delete', (c) => {
 })
 
 const port = Number(process.env.PORT ?? 3000)
-serve({ fetch: app.fetch, port })
+serve({ fetch: app.fetch, port, hostname: '127.0.0.1' })
 console.log(`Server is running on http://localhost:${port}`)
